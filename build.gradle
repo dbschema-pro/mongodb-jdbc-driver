@@ -1,19 +1,16 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
-plugins{
+plugins {
     id 'java-library'
     id 'maven-publish'
     id 'signing'
+    id 'application'
+    id 'distribution'
 }
 
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
-apply plugin: 'application'
-apply plugin: 'distribution'
-
+ext {
+    driverVersion = '4.8.2'
+    group = 'com.wisecoders.dbschema'
+    archivesBaseName = 'mongodb-jdbc-driver'
+}
 
 repositories {
     mavenCentral()
@@ -21,96 +18,53 @@ repositories {
 
 dependencies {
     implementation 'org.mongodb:mongodb-driver-sync:5.2.0'
-    implementation 'org.graalvm.js:js:24.1.0'
+    implementation "org.graalvm.sdk:graal-sdk:24.1.0"
+    compileOnly 'org.graalvm.js:js:24.1.0'
     implementation 'org.graalvm.js:js-scriptengine:24.1.0'
     implementation 'org.graalvm.truffle:truffle-api:24.1.0'
     implementation 'com.google.code.gson:gson:2.11.0'
     testImplementation 'junit:junit:4.13.2'
-    //implementation "org.graalvm.sdk:graal-sdk:22.0.0.2"
-    //implementation "org.graalvm.truffle:truffle-api:22.0.0.2"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    withJavadocJar()
+    withSourcesJar()
+}
 
-compileJava{
-    sourceCompatibility = '11'
-    targetCompatibility = '11'
+tasks.compileJava {
     doFirst {
         options.compilerArgs = [
-                '--module-path', classpath.asPath,
+                '--module-path', classpath.asPath
         ]
     }
 }
 
-jar {
-    archiveFileName ="mongojdbc${driverVersion}.jar"
+tasks.jar {
+    archiveFileName.set("mongojdbc${driverVersion}.jar")
     manifest {
-        attributes 'Main-Class': 'com.wisecoders.dbschema.mongodb.JdbcDriver'
-        attributes 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
-        attributes 'Specification-Version': "$driverVersion"
-        attributes 'Specification-Vendor': "Wise Coders"
-        attributes 'Implementation-Vendor-Id': "dbschema.com"
-        attributes 'Implementation-Vendor': "Wise Coders"
-        attributes 'Implementation-Version': new Date().format( 'yyMMdd' )
+        attributes(
+                'Main-Class': 'com.wisecoders.dbschema.mongodb.JdbcDriver',
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.name }.join(' '),
+                'Specification-Version': driverVersion,
+                'Specification-Vendor': 'Wise Coders',
+                'Implementation-Vendor-Id': 'dbschema.com',
+                'Implementation-Vendor': 'Wise Coders',
+                'Implementation-Version': new Date().format('yyMMdd')
+        )
     }
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'com.wisecoders.dbschema'
-            artifactId = 'mongodb-jdbc-driver'
-            version = '${driverVersion}'
-
-            from components.java
-        }
-    }
-}
-
-
-task zip(type: Zip, dependsOn:['clean','jar']) {
-    archiveFileName.set 'MongoDbJdbcDriver.zip'
-    from configurations.runtimeClasspath.allArtifacts.files
-    from configurations.runtimeClasspath
-    from "build/libs" include "*.jar"
-}
-
-task tar(type: Tar, dependsOn:['clean','jar']) {
-    archiveFileName.set 'MongoDbJdbcDriver.tar'
-    from configurations.runtimeClasspath.allArtifacts.files
-    from configurations.runtimeClasspath
-    from "build/libs" include "*.jar"
-}
-
-task copyInUserHome(type: Copy,dependsOn:['clean','jar']) {
-    from configurations.runtimeClasspath.allArtifacts.files
-    from configurations.runtimeClasspath
-    from "build/libs" include "*.jar"
-    into "${System.getProperty('user.home')}/.DbSchema/drivers/MongoDb/"
-}
-
-
-
-group = "com.wisecoders"
-archivesBaseName = "mongodb-jdbc-drvier"
-version = "4.8.2"
-
-
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-javadoc {
-    options.addBooleanOption('html5', true)
-}
-artifacts {
-    archives javadocJar, sourcesJar
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            groupId = 'com.wisecoders.dbschema'
             artifactId = 'mongodb-jdbc-driver'
+            version = driverVersion
+
             from components.java
+
             versionMapping {
                 usage('java-api') {
                     fromResolutionOf('runtimeClasspath')
@@ -119,35 +73,34 @@ publishing {
                     fromResolutionResult()
                 }
             }
+
             pom {
-                name = 'MongoDB-JDBC-Driver'
-                description = 'MongoDB JDBC Driver'
-                url = 'https://dbschema.com/jdbc-driver/MongoDb.html'
-                properties = [
-                        myProp: "value",
-                        "prop.with.dots": "anotherValue"
-                ]
+                name.set('MongoDB-JDBC-Driver')
+                description.set('MongoDB JDBC Driver')
+                url.set('https://dbschema.com/jdbc-driver/MongoDb.html')
+
                 licenses {
                     license {
-                        name = 'GPL-3Plus dual license. Contributions only to https://github.com/wise-coders/mongodb-jdbc-driver'
-                        url = 'https://github.com/wise-coders/mongodb-jdbc-driver'
+                        name.set('GPL-3Plus dual license. Contributions only to https://github.com/wise-coders/mongodb-jdbc-driver')
+                        url.set('https://github.com/wise-coders/mongodb-jdbc-driver')
                     }
                 }
                 developers {
                     developer {
-                        id = 'wisecoders'
-                        name = 'Wise Coders GmbH'
-                        email = 'support@wisecoders.com'
+                        id.set('wisecoders')
+                        name.set('Wise Coders GmbH')
+                        email.set('support@wisecoders.com')
                     }
                 }
                 scm {
-                    connection = 'scm:git:git://github.com/wise-coders/mongodb-jdbc-driver'
-                    developerConnection = 'scm:git:ssh://github.com/wise-coders/mongodb-jdbc-driver'
-                    url = 'https://github.com/wise-coders/mongodb-jdbc-driver'
+                    connection.set('scm:git:git://github.com/wise-coders/mongodb-jdbc-driver')
+                    developerConnection.set('scm:git:ssh://github.com/wise-coders/mongodb-jdbc-driver')
+                    url.set('https://github.com/wise-coders/mongodb-jdbc-driver')
                 }
             }
         }
     }
+
     repositories {
         maven {
             name = "OSSRH"
@@ -159,10 +112,42 @@ publishing {
         }
     }
 }
+
 signing {
     sign publishing.publications.mavenJava
 }
 
+tasks.register('zip', Zip) {
+    dependsOn 'clean', 'jar'
+    archiveFileName.set('MongoDbJdbcDriver.zip')
+    from configurations.runtimeClasspath.allArtifacts.files
+    from configurations.runtimeClasspath
+    from "build/libs" include "*.jar"
+}
+
+tasks.register('tar', Tar) {
+    dependsOn 'clean', 'jar'
+    archiveFileName.set('MongoDbJdbcDriver.tar')
+    from configurations.runtimeClasspath.allArtifacts.files
+    from configurations.runtimeClasspath
+    from "build/libs" include "*.jar"
+}
+
+tasks.register('copyInUserHome', Copy) {
+    dependsOn 'clean', 'jar'
+    from configurations.runtimeClasspath.allArtifacts.files
+    from configurations.runtimeClasspath
+    from "build/libs" include "*.jar"
+    into "${System.getProperty('user.home')}/.DbSchema/drivers/MongoDb/"
+}
+
+tasks.javadoc {
+    options.addBooleanOption('html5', true)
+}
+
+artifacts {
+    archives tasks.javadocJar, tasks.sourcesJar
+}
 
 /*
 remotes {
