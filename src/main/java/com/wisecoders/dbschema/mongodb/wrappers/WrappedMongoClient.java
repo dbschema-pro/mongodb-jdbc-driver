@@ -55,10 +55,10 @@ public class WrappedMongoClient {
         mongoClient.listDatabaseNames();
         Bson command = new BsonDocument("ping", new BsonInt64(1));
         try {
-            mongoClient.getDatabase(databaseName != null && databaseName.length() > 0 ? databaseName : "admin").runCommand(command);
+            mongoClient.getDatabase(databaseName != null && !databaseName.isEmpty() ? databaseName : "admin").runCommand(command);
             LOGGER.info("Connected successfully to server.");
             return true;
-        } catch ( Throwable ex ){}
+        } catch ( Throwable ignore ){}
         mongoClient.getDatabase("admin").runCommand(command);
         LOGGER.info("Connected successfully to server.");
         return true;

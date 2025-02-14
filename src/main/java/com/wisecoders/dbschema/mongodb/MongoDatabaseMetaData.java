@@ -126,7 +126,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
             // insert, or it can be omitted, in which case MongoDB generates a unique value.
             MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableName);
 
-            //LOGGER.info( "Export Collection '" + tableName + "' fields");
+            LOGGER.info( "Export Collection '" + tableName + "' fields");
             if (collection != null) {
                 for (MetaField field : collection.fields) {
                     if (columnNamePattern == null || columnNamePattern.equals(field.name)) {
@@ -140,7 +140,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
     }
 
     private void exportColumnsRecursive(MetaCollection collection, ArrayResultSet result, MetaField field) {
-        //LOGGER.info( "Export Collection '" + collection.name + "' field '" + field.getNameWithPath() + "'");
+        LOGGER.info( "Export Collection '" + collection.name + "' field '" + field.getNameWithPath() + "'");
         result.addRow(new String[] { collection.metaDatabase.name, // "TABLE_CAT",
                 null, // "TABLE_SCHEMA",
                 collection.name, // "TABLE_NAME", (i.e. MongoDB Collection Name)

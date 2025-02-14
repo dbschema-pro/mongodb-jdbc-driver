@@ -4,18 +4,9 @@ package com.wisecoders.dbschema.mongodb;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoClient;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
+import java.sql.*;
 import java.util.Properties;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.*;
 
 
 /**
@@ -60,123 +51,62 @@ public class JdbcDriver implements Driver
 
 
     /**
-     * Connect to the database using a URL like:
+     * Connect to the database using a URL like :
      * jdbc:mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
      * The URL excepting the jdbc: prefix is passed as it is to the MongoDb native Java driver.
      */
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        if (url != null && acceptsURL(url)) {
-            if (url.startsWith("jdbc:")) {
+        if ( url != null && acceptsURL( url )){
+            if ( url.startsWith("jdbc:")) {
                 url = url.substring("jdbc:".length());
             }
-            LOGGER.info("Connect URL: " + url);
-
-            // Extract username and password from Properties
-            String user = info.getProperty("user");
-            String password = info.getProperty("password");
-
-            // If username and password are provided, inject them into the URL
-            if (user != null && password != null) {
-                int atIndex = url.indexOf("@");
-                if (atIndex > 0) {
-                    // Replace existing credentials in the URL
-                    int protocolEndIndex = url.indexOf("//") + 2;
-                    int credentialsEndIndex = url.indexOf("@");
-                    url = url.substring(0, protocolEndIndex) + user + ":" + password + "@" + url.substring(credentialsEndIndex + 1);
-                } else {
-                    // Add credentials if not present
-                    int protocolEndIndex = url.indexOf("//") + 2;
-                    url = url.substring(0, protocolEndIndex) + user + ":" + password + "@" + url.substring(protocolEndIndex);
-                }
-            }
-
-            LOGGER.info("Updated URL with credentials: " + url);
-
-            // Extract existing query parameters from the URL
-            int queryIndex = url.indexOf("?");
-            String baseUrl = queryIndex > 0 ? url.substring(0, queryIndex) : url;
-            String existingParams = queryIndex > 0 ? url.substring(queryIndex + 1) : "";
-
-            // Append additional parameters from Properties
-            StringBuilder newParams = new StringBuilder(existingParams);
-            for (String key : info.stringPropertyNames()) {
-                if (!key.equals("user") && !key.equals("password")) { // Skip user and password
-                    if (newParams.length() > 0) {
-                        newParams.append("&");
-                    }
-                    newParams.append(key).append("=").append(info.getProperty(key));
-                }
-            }
-
-            // Reconstruct the final URL
-            String finalUrl = baseUrl;
-            if (newParams.length() > 0) {
-                finalUrl += "?" + newParams;
-            }
-
-            LOGGER.info("Final URL with additional parameters: " + finalUrl);
-
+            LOGGER.info("Connect URL: " + url );
             int idx;
             ScanStrategy scan = ScanStrategy.fast;
             boolean expand = false, sortFields = false;
             String trustStore = null, trustStorePassword = null;
-            String newUrl = finalUrl, urlWithoutParams = finalUrl;
-
-            if ((idx = finalUrl.indexOf("?")) > 0) {
-                String paramsURL = finalUrl.substring(idx + 1);
-                urlWithoutParams = finalUrl.substring(0, idx);
+            String newUrl = url, urlWithoutParams = url;
+            if ( ( idx = url.indexOf("?")) > 0 ){
+                String paramsURL = url.substring( idx+1);
+                urlWithoutParams = url.substring( 0, idx );
                 StringBuilder sbParams = new StringBuilder();
-                for (String pair : paramsURL.split("&")) {
+                for ( String pair: paramsURL.split("&")){
                     String[] pairArr = pair.split("=");
                     String key = pairArr.length == 2 ? pairArr[0].toLowerCase() : "";
                     String value = pairArr.length == 2 ? pairArr[1] : "";
-                    switch (key) {
-                        case "scan":
-                            try {
-                                scan = ScanStrategy.valueOf(value);
-                            } catch (IllegalArgumentException ignore) {
-                            }
+                    switch( key ){
+                        case "scan": try { scan = ScanStrategy.valueOf( value);} catch ( IllegalArgumentException ignore ){}
                             LOGGER.info("ScanStrategy=" + scan);
                             break;
-                        case "expand":
-                            expand = Boolean.parseBoolean(value);
-                            break;
-                        case "sort":
-                            sortFields = Boolean.parseBoolean(value);
-                            break;
-                        case "truststore":
-                            trustStore = value;
-                            break;
-                        case "truststorepassword":
-                            trustStorePassword = value;
-                            break;
+                        case "expand": expand = Boolean.parseBoolean( value); break;
+                        case "sort": sortFields = Boolean.parseBoolean( value); break;
+                        case "truststore": trustStore = value; break;
+                        case "truststorepassword": trustStorePassword = value; break;
                         default:
-                            if (sbParams.length() > 0) sbParams.append("&");
-                            sbParams.append(pair);
+                            if ( sbParams.length() > 0 ) sbParams.append("&");
+                            sbParams.append( pair );
                             break;
                     }
                 }
-                newUrl = finalUrl.substring(0, idx) + "?" + sbParams;
+                newUrl = url.substring(0, idx) + "?" + sbParams;
             }
-
-            if (trustStore != null) {
+            if ( trustStore != null ){
                 System.setProperty("javax.net.ssl.trustStore", trustStore);
             }
-            if (trustStorePassword != null) {
-                System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+            if ( trustStorePassword != null ){
+                System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword );
             }
-
             String databaseName = "admin";
-            if (urlWithoutParams.endsWith("/")) {
-                urlWithoutParams = urlWithoutParams.substring(0, urlWithoutParams.length() - 1);
+            if ( urlWithoutParams.endsWith("/")) {
+                urlWithoutParams = urlWithoutParams.substring( 0, urlWithoutParams.length()-1);
             }
-            if ((idx = urlWithoutParams.lastIndexOf("/")) > 1 && urlWithoutParams.charAt(idx - 1) != '/') {
-                databaseName = urlWithoutParams.substring(idx + 1);
+            if ( ( idx = urlWithoutParams.lastIndexOf("/")) > 1 && urlWithoutParams.charAt( idx -1) != '/' ){
+                databaseName = urlWithoutParams.substring( idx + 1 );
             }
 
-            LOGGER.info("MongoClient URL: " + finalUrl + " rewritten as " + newUrl);
-            final WrappedMongoClient client = new WrappedMongoClient(newUrl, info, databaseName, scan, expand, sortFields);
+            LOGGER.info("MongoClient URL: " + url + " rewritten as " + newUrl );
+            final WrappedMongoClient client = new WrappedMongoClient(newUrl, info, databaseName, scan, expand, sortFields );
             return new MongoConnection(client);
         }
         return null;
