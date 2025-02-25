@@ -1,9 +1,13 @@
 package com.wisecoders.dbschema.mongodb;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Licensed under <a href="https://creativecommons.org/licenses/by-nd/4.0/deed.en">CC BY-ND 4.0 DEED</a>, copyright <a href="https://wisecoders.com">Wise Coders GmbH</a>, used by <a href="https://dbschema.com">DbSchema Database Designer</a>.
@@ -17,7 +21,7 @@ public class ExpandedResultSet extends AbstractTestCase{
     private static final String urlWithoutAuth = "jdbc:mongodb://localhost?expand=true";
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws ClassNotFoundException, SQLException {
         Class.forName("com.wisecoders.dbschema.mongodb.JdbcDriver");
         con = DriverManager.getConnection( urlWithoutAuth, null, null);
