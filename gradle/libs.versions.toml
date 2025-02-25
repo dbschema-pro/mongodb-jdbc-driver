@@ -1,0 +1,15 @@
+[versions]
+graal = "24.1.0"
+junitJupiter = "5.11.4"
+
+[libraries]
+mongodbDriverSync      = { group = "org.mongodb"         , name = "mongodb-driver-sync"    , version = "5.2.1"            }
+graal-js               = { group = "org.graalvm.js"      , name = "js"                     , version.ref = "graal"        }
+graal-jsScriptEngine   = { group = "org.graalvm.js"      , name = "js-scriptengine"        , version.ref = "graal"        }
+gson                   = { group = "com.google.code.gson", name = "gson"                   , version = "2.11.0"           }
+junit-jupiter          = { group = "org.junit.jupiter"   , name = "junit-jupiter"          , version.ref = "junitJupiter" }
+junit-jupiterApi       = { group = "org.junit.jupiter"   , name = "junit-jupiter-api"      , version.ref = "junitJupiter" }
+junit-platformLauncher = { group = "org.junit.platform"  , name = "junit-platform-launcher", version = "1.11.4"           }
+assertj-core           = { group = "org.assertj"         , name = "assertj-core"           , version = "3.27.3"           }
+
+[plugins]

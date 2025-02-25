@@ -2,11 +2,20 @@
 package com.wisecoders.dbschema.mongodb;
 
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoClient;
-
-import java.io.File;
-import java.sql.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
-import java.util.logging.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 
 /**
@@ -26,10 +35,9 @@ public class JdbcDriver implements Driver
 
     static {
         try {
-            final File logsFile = new File("~/.DbSchema/logs/");
-            if ( !logsFile.exists()) {
-                logsFile.mkdirs();
-            }
+            final Path logsDirectory = Path.of(System.getProperty("user.home"), ".DbSchema", "logs");
+            Files.createDirectories(logsDirectory);
+
 
             DriverManager.registerDriver( new JdbcDriver());
             LOGGER.setLevel(Level.ALL);
@@ -39,7 +47,8 @@ public class JdbcDriver implements Driver
             consoleHandler.setFormatter(new SimpleFormatter());
             LOGGER.addHandler(consoleHandler);
 
-            final FileHandler fileHandler = new FileHandler(System.getProperty("user.home") + "/.DbSchema/logs/MongoDbJdbcDriver.log");
+            final Path logFile = logsDirectory.resolve("MongoDbJdbcDriver.log");
+            final FileHandler fileHandler = new FileHandler(logFile.toString());
             fileHandler.setFormatter( new SimpleFormatter());
             fileHandler.setLevel(Level.ALL);
             LOGGER.addHandler(fileHandler);

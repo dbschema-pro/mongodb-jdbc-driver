@@ -2,7 +2,6 @@ package com.wisecoders.dbschema.mongodb;
 
 import com.google.gson.Gson;
 import com.wisecoders.dbschema.mongodb.structure.MetaObject;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

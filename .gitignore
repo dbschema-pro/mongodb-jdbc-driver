@@ -1,12 +1,19 @@
-out
+# IntelliJ
+.idea/
+*.iws
+*.ipr
+*.iml
+out/
+
+# Gradle
 .gradle
-.idea
-build
+build/
+.kotlin/
+
+# garbage that MacOS insists in putting in every directory
+.DS_Store
+
+# others
 target
-dbs.iml
-gradle
-gradlew
-gradlew.bat
 gradle.properties
 resources/retrace
-.DS_Store
