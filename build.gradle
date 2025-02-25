@@ -19,7 +19,7 @@ repositories {
 dependencies {
     implementation 'org.mongodb:mongodb-driver-sync:5.2.1'
     implementation "org.graalvm.sdk:graal-sdk:24.1.0"
-    compileOnly 'org.graalvm.js:js:24.1.0'
+    implementation 'org.graalvm.js:js:24.1.0'
     implementation 'org.graalvm.js:js-scriptengine:24.1.0'
     implementation 'org.graalvm.truffle:truffle-api:24.1.0'
     implementation 'com.google.code.gson:gson:2.11.0'
